@@ -54,7 +54,12 @@ var SmartBanner = function(options) {
 		theme: '', // put platform type ('ios', 'android', etc.) here to force single theme on all device
 		icon: '', // full path to icon image if not using website icon image
 		force: '', // put platform type ('ios', 'android', etc.) here for emulation
-		instanceId: '0'
+		instanceId: '0',
+		appId: {
+			ios: undefined,
+			android: undefined,
+			windows: undefined
+		}
 	}, options || {});
 
 	if (this.options.force) {
@@ -164,6 +169,10 @@ SmartBanner.prototype = {
 		});
 	},
 	parseAppId: function() {
+		if (this.options.appId[this.type] !== undefined) {
+			this.appId = this.options.appId[this.type];
+			return this.appId;
+		}
 		var meta = q('meta[name="' + this.appMeta + '"]');
 		if (!meta) {
 			return;

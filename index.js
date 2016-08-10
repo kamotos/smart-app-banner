@@ -53,7 +53,8 @@ var SmartBanner = function(options) {
 		},
 		theme: '', // put platform type ('ios', 'android', etc.) here to force single theme on all device
 		icon: '', // full path to icon image if not using website icon image
-		force: '' // put platform type ('ios', 'android', etc.) here for emulation
+		force: '', // put platform type ('ios', 'android', etc.) here for emulation
+		instanceId: '0'
 	}, options || {});
 
 	if (this.options.force) {
@@ -74,7 +75,7 @@ var SmartBanner = function(options) {
 	if (!this.type
 		|| ( this.type === 'ios' && agent.browser.name === 'Mobile Safari' && parseInt(agent.os.version) >= 6 )
 		|| navigator.standalone
-		|| cookie.get('smartbanner-closed')
+		|| cookie.get('smartbanner-closed-' + this.options.instanceId)
 		|| cookie.get('smartbanner-installed')) {
 		return;
 	}
@@ -150,7 +151,7 @@ SmartBanner.prototype = {
 	},
 	close: function() {
 		this.hide();
-		cookie.set('smartbanner-closed', 'true', {
+		cookie.set('smartbanner-closed-' + this.options.instanceId, 'true', {
 			path: '/',
 			expires: new Date(+new Date() + this.options.daysHidden * 1000 * 60 * 60 * 24)
 		});

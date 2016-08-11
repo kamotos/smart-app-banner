@@ -59,7 +59,10 @@ var SmartBanner = function(options) {
 			ios: undefined,
 			android: undefined,
 			windows: undefined
-		}
+		},
+		closeCallback: undefined,
+		getHtml: this.getDefaultHtml,
+		addContainerClassName: true
 	}, options || {});
 
 	if (this.options.force) {
@@ -100,39 +103,12 @@ SmartBanner.prototype = {
 	constructor: SmartBanner,
 
 	create: function() {
-		var link = this.getStoreLink();
-		var inStore = this.options.price[this.type] + ' - ' + this.options.store[this.type];
-		var icon;
-
-		if (this.options.icon) {
-			icon = this.options.icon;
-		} else {
-			for (var i = 0; i < this.iconRels.length; i++) {
-				var rel = q('link[rel="' + this.iconRels[i] + '"]');
-
-				if (rel) {
-					icon = rel.getAttribute('href');
-					break;
-				}
-			}
-		}
-
 		var sb = doc.createElement('div');
 		var theme = this.options.theme || this.type;
 
-		sb.className = 'smartbanner' + ' smartbanner-' + theme;
-		sb.innerHTML = '<div class="smartbanner-container">' +
-							'<a href="javascript:void(0);" class="smartbanner-close">&times;</a>' +
-							'<span class="smartbanner-icon" style="background-image: url('+icon+')"></span>' +
-							'<div class="smartbanner-info">' +
-								'<div class="smartbanner-title">'+this.options.title+'</div>' +
-								'<div>'+this.options.author+'</div>' +
-								'<span>'+inStore+'</span>' +
-							'</div>' +
-							'<a href="'+link+'" class="smartbanner-button">' +
-								'<span class="smartbanner-button-text">'+this.options.button+'</span>' +
-							'</a>' +
-						'</div>';
+		if (this.options.addContainerClassName)
+			sb.className = 'smartbanner' + ' smartbanner-' + theme;
+		sb.innerHTML = this.getHtml();
 
 		//there isn’t neccessary a body
 		if (doc.body) {
@@ -148,6 +124,46 @@ SmartBanner.prototype = {
 		q('.smartbanner-close', sb).addEventListener('click', this.close.bind(this), false);
 
 	},
+	getHtml: function() {
+		var icon;
+
+		if (this.options.icon) {
+			icon = this.options.icon;
+		} else {
+			for (var i = 0; i < this.iconRels.length; i++) {
+				var rel = q('link[rel="' + this.iconRels[i] + '"]');
+
+				if (rel) {
+					icon = rel.getAttribute('href');
+					break;
+				}
+			}
+		}
+		
+		var params = extend({
+			icon: icon,
+			link: this.getStoreLink(),
+			inStore: this.options.price[this.type] + ' - ' + this.options.store[this.type]
+		}, this.options, {});
+		
+		if (this.options.getHtml)
+			return this.options.getHtml(params);
+		return this.getDefaultHtml(params)
+	},
+	getDefaultHtml: function(params) {
+		return '<div class="smartbanner-container">' +
+			'<a href="javascript:void(0);" class="smartbanner-close">&times;</a>' +
+			'<span class="smartbanner-icon" style="background-image: url(' + params.icon + ')"></span>' +
+			'<div class="smartbanner-info">' +
+				'<div class="smartbanner-title">'+params.title+'</div>' +
+				'<div>'+params.author+'</div>' +
+				'<span>'+params.inStore+'</span>' +
+			'</div>' +
+			'<a href="'+params.link+'" class="smartbanner-button">' +
+				'<span class="smartbanner-button-text">'+params.button+'</span>' +
+			'</a>' +
+		'</div>'
+	},
 	hide: function() {
 		root.classList.remove('smartbanner-show');
 	},
@@ -156,6 +172,8 @@ SmartBanner.prototype = {
 	},
 	close: function() {
 		this.hide();
+		this.options.closeCallback && this.options.closeCallback();
+		
 		cookie.set('smartbanner-closed-' + this.options.instanceId, 'true', {
 			path: '/',
 			expires: new Date(+new Date() + this.options.daysHidden * 1000 * 60 * 60 * 24)

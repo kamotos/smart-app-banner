@@ -62,7 +62,8 @@ var SmartBanner = function(options) {
 		},
 		closeCallback: undefined,
 		getHtml: this.getDefaultHtml,
-		addContainerClassName: true
+		addContainerClassName: true,
+		postRender: undefined
 	}, options || {});
 
 	if (this.options.force) {
@@ -107,7 +108,8 @@ SmartBanner.prototype = {
 		var theme = this.options.theme || this.type;
 
 		if (this.options.addContainerClassName)
-			sb.className = 'smartbanner' + ' smartbanner-' + theme;
+			// sb.className = 'smartbanner' + ' smartbanner-' + theme;
+			sb.className = ' smartbanner-' + theme;
 		sb.innerHTML = this.getHtml();
 
 		//there isn’t neccessary a body
@@ -120,8 +122,10 @@ SmartBanner.prototype = {
 			});
 		}
 
+		this.options.postRender && this.options.postRender();
+
 		q('.smartbanner-button', sb).addEventListener('click', this.install.bind(this), false);
-		q('.smartbanner-close', sb).addEventListener('click', this.close.bind(this), false);
+		q('.smartbanner-close, .js-smartbanner-close', sb).addEventListener('click', this.close.bind(this), false);
 
 	},
 	getHtml: function() {

@@ -125,8 +125,12 @@ SmartBanner.prototype = {
 		this.options.postRender && this.options.postRender();
 
 		q('.smartbanner-button', sb).addEventListener('click', this.install.bind(this), false);
-		q('.smartbanner-close, .js-smartbanner-close', sb).addEventListener('click', this.close.bind(this), false);
 
+		var thisSmartBanner = this;
+		Array.prototype.slice.call(q.all('.smartbanner-close, .js-smartbanner-close', sb))
+			.forEach(function(el){
+				el.addEventListener('click', thisSmartBanner.close.bind(thisSmartBanner), false);
+		});
 	},
 	getHtml: function() {
 		var icon;
@@ -170,6 +174,7 @@ SmartBanner.prototype = {
 	},
 	hide: function() {
 		root.classList.remove('smartbanner-show');
+		document.getElementsByClassName('smartbanner-android')[0].style.display = 'none';
 	},
 	show: function() {
 		root.classList.add('smartbanner-show');
